@@ -70,5 +70,5 @@ func (s *Session) Declassify() *Session {
 }
 
 func (s *Session) IsActive() bool {
-	return s.Active && s.ExpiresAt.After(time.Now())
+	return !s.Identity.IsDisabled() && s.Active && s.ExpiresAt.After(time.Now())
 }
