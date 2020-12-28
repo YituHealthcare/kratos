@@ -35,6 +35,9 @@ type (
 		// required: true
 		ID uuid.UUID `json:"id" faker:"-" db:"id"`
 
+		// Disabled represents whether identity is disabled
+		Disabled bool `json:"disabled" faker:"-" db:"disabled"`
+
 		// Credentials represents all credentials that can be used for authenticating this identity.
 		Credentials map[CredentialsType]Credentials `json:"-" faker:"-" db:"-"`
 
@@ -172,6 +175,24 @@ func (i *Identity) CopyWithoutCredentials() *Identity {
 	return &ii
 }
 
+func (i *Identity) Disable() {
+	i.lock().RLock()
+	defer i.lock().RUnlock()
+
+	i.Disabled = true
+}
+
+func (i *Identity) Enable() {
+	i.lock().RLock()
+	defer i.lock().RUnlock()
+
+	i.Disabled = false
+}
+
+func (i *Identity) IsDisabled() bool {
+	return i.Disabled
+}
+
 func NewIdentity(traitsSchemaID string) *Identity {
 	if traitsSchemaID == "" {
 		traitsSchemaID = config.DefaultIdentityTraitsSchemaID
@@ -179,6 +200,7 @@ func NewIdentity(traitsSchemaID string) *Identity {
 
 	return &Identity{
 		ID:                  x.NewUUID(),
+		Disabled:            false,
 		Credentials:         map[CredentialsType]Credentials{},
 		Traits:              Traits("{}"),
 		SchemaID:            traitsSchemaID,
