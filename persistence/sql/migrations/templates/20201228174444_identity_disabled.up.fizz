@@ -1,0 +1,1 @@
+add_column("identities", "disabled", "boolean", {"null": false, "default": false})

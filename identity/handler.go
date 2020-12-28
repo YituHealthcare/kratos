@@ -48,6 +48,9 @@ func (h *Handler) RegisterAdminRoutes(admin *x.RouterAdmin) {
 
 	admin.POST(RouteBase, h.create)
 	admin.PUT(RouteBase+"/:id", h.update)
+
+	admin.PUT(RouteBase+"/:id/disabled", h.disable)
+	admin.DELETE(RouteBase+"/:id/disabled", h.enable)
 }
 
 // A single identity.
@@ -344,6 +347,73 @@ type deleteIdentityParameters struct {
 //       500: genericError
 func (h *Handler) delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err := h.r.IdentityPool().(PrivilegedPool).DeleteIdentity(r.Context(), x.ParseUUID(ps.ByName("id"))); err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// swagger:route PUT /identities/{id}/disabled admin disableIdentity
+//
+// Disable an Identity
+//
+// Calling this endpoint disable an identity.
+// This endpoint returns 204 when the identity was disabled or has been disabled already.
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       204: emptyResponse
+//		 404: genericError
+//       500: genericError
+func (h *Handler) disable(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id := x.ParseUUID(ps.ByName("id"))
+	identity, err := h.r.PrivilegedIdentityPool().GetIdentityConfidential(r.Context(), id)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	identity.Disable()
+	if err := h.r.IdentityManager().Update(r.Context(), identity); err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// swagger:route DELETE /identities/{id}/disabled admin enableIdentity
+//
+// Enable an Identity
+//
+// Calling this endpoint re-enable an identity.
+// This endpoint returns 204 when the identity was enabled or has been enabled already.
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Responses:
+//       204: emptyResponse
+//		 404: genericError
+//       500: genericError
+func (h *Handler) enable(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id := x.ParseUUID(ps.ByName("id"))
+	identity, err := h.r.PrivilegedIdentityPool().GetIdentityConfidential(r.Context(), id)
+	if err != nil {
+		h.r.Writer().WriteError(w, r, err)
+		return
+	}
+
+	identity.Enable()
+
+	if err := h.r.IdentityManager().Update(r.Context(), identity); err != nil {
 		h.r.Writer().WriteError(w, r, err)
 		return
 	}

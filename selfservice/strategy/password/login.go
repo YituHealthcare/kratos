@@ -140,6 +140,10 @@ func (s *Strategy) handleLogin(w http.ResponseWriter, r *http.Request, _ httprou
 		s.handleLoginError(w, r, ar, &p, errors.WithStack(schema.NewInvalidCredentialsError()))
 		return
 	}
+	if i.IsDisabled() {
+		s.handleLoginError(w, r, ar, &p, errors.WithStack(schema.NewInvalidCredentialsError()))
+		return
+	}
 
 	var o CredentialsConfig
 	d := json.NewDecoder(bytes.NewBuffer(c.Config))

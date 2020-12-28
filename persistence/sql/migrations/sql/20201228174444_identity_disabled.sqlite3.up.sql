@@ -1,0 +1,1 @@
+ALTER TABLE "identities" ADD COLUMN "disabled" NUMERIC DEFAULT 'false';

@@ -3,6 +3,7 @@ package oidc
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/ory/kratos/schema"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -64,6 +65,10 @@ func (s *Strategy) processLogin(w http.ResponseWriter, r *http.Request, a *login
 		}
 
 		s.handleError(w, r, a.GetID(), provider.Config().ID, nil, err)
+		return
+	}
+	if i.IsDisabled() {
+		s.handleError(w, r, a.GetID(), provider.Config().ID, nil, errors.WithStack(schema.NewInvalidCredentialsError()))
 		return
 	}
 
