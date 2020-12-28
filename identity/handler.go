@@ -48,6 +48,9 @@ func (h *Handler) RegisterAdminRoutes(admin *x.RouterAdmin) {
 
 	admin.POST(RouteBase, h.create)
 	admin.PUT(RouteBase+"/:id", h.update)
+
+	admin.PUT(RouteBase+"/:id/disabled", h.disable)
+	admin.DELETE(RouteBase+"/:id/disabled", h.enable)
 }
 
 // A single identity.
