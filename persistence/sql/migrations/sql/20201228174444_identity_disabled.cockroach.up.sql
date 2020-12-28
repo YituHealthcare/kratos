@@ -1,0 +1,1 @@
+ALTER TABLE "identities" ADD COLUMN "disabled" boolean DEFAULT 'false';COMMIT TRANSACTION;BEGIN TRANSACTION;
